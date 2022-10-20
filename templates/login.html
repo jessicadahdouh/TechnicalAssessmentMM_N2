@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block header %}
+    <title>Login</title>
+{% endblock header %}
+
+{% block content %} 
+    <div class="card-header">
+        <h3>Sign In</h3>
+    </div>
+    <div class="card-body">
+        <form name="login_form">
+            <div class="input-group form-group">
+                <div class="input-group-prepend">
+                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                </div>
+                <input type="text" class="form-control" id="Input_Username" name="name" placeholder="username" required autofocus />
+            </div>
+            <div class="input-group form-group">
+                <div class="input-group-prepend">
+                    <span class="input-group-text"><i class="fas fa-key"></i></span>
+                </div>
+                <input type="password" id="Input_Password" class="form-control" name="password" placeholder="password" required />
+                <div class="input-group-append">
+                    <span class="input-group-text bg-eye-slash" id="Span_ShowHidePass"><i id="I_ShowHidePass" class="fa fa-eye-slash"></i></span>
+                </div>
+            </div>
+
+            <div class="form-group text-center">
+                <input type="submit" value="Login" id="Btn_Login" class="btn login_btn">
+            </div>
+        </form>
+        <script type="text/javascript">
+            $(document).ready(function(){
+                $('#Span_ShowHidePass').click(function(e){
+                    //toggle between showing and hiding password
+                    e.preventDefault()
+                    var passwordField = $('#Input_Password');
+                    var passwordFieldType = passwordField.attr('type');
+
+                    $('#I_ShowHidePass').toggleClass('fa-eye');
+                    $('#I_ShowHidePass').toggleClass('fa-eye-slash');
+                    if(passwordFieldType == 'password'){
+                        passwordField.attr('type', 'text');
+                    }else{
+                        passwordField.attr('type', 'password');						
+                    }
+                });
+                $('form[name="login_form"]').submit(function(event){
+                    if ($("#Input_Username").val() != ""){
+                        //preparation and value assignment to link create and link DataFolder
+                        username = $('#Input_Username').val();
+                        password = $('#Input_Password').val();
+
+                        $.ajax({
+                            url:'/user/login/',
+                            method:'POST',
+
+                            data:{
+                                username:username,
+                                password:password,
+                            },
+
+                            headers:{
+                                'X-CSRFToken':'{{ csrf_token }}'
+                            },
+
+                        }).done(function(msg){
+                            if(msg['auth'] == true){
+                                if(msg['is_admin'] == true){
+                                    location.href ='/admin/'
+                                }else{
+                                    location.href ='/user/'
+                                }
+                            }else{
+                                alert("Incorrect username or password")
+                                $("#Input_Username").val("")
+                                $('#Input_Password').val("")
+                            }
+                        }).fail(function(err){
+                            alert(err);
+                        });
+                    }else{
+                        alert("Username can't be blank")
+                    }
+                    event.preventDefault()
+                });
+            });
+        </script>
+    </div>
+{% endblock %}

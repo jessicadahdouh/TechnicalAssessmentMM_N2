@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block header %}
+    <title>Login</title>
+{% endblock header %}
+
+{% block content %} 
+    <div class="card-header">
+        <h5 class="text-white float-left">Welcome Admin - {{ session['user'] }}</h5>
+        <input type="submit" value="Logout" id="Btn_Logout" class="btn login_btn float-right mt-0">
+    </div>
+    <div class="card-body">
+        <form>
+            <div class="input-group form-group">
+                <input type="text" class="form-control" id="Input_Username" name="name" placeholder="username" required autofocus />
+            
+                <div class="input-group form-group justify-content-center">            
+                    <input type="submit" value="Search" id="Btn_Search" class="btn login_btn">
+                </div>
+            </div>
+
+            
+            
+            <div class="form-group text-center">
+                <input type="text" class="form-control" id="Input_UserFound" name="userFound" hidden required autofocus />
+                <h3 class="text-danger" id="Label_userfound"></h3>
+                <hr>
+                <input type="submit" value="Save" id="Btn_Save" class="btn login_btn" hidden>
+                <input type="submit" value="Delete" id="Btn_Delete" class="btn login_btn" hidden>
+            </div>
+        </form>
+        <script type="text/javascript">
+            $(document).ready(function(){
+                $('.card').height(380)
+                $('#Btn_Search').on('click', function(event){
+                    event.preventDefault()
+                    $('#Label_userfound').text('')
+                    if ($("#Input_Username").val() != ""){
+                        $('#Input_UserFound').removeAttr('hidden');
+                        $('#Btn_Save').removeAttr('hidden');
+                        $('#Btn_Delete').removeAttr('hidden');
+                       
+                        username = $('#Input_Username').val();
+
+                        $.ajax({
+                            url:'/admin/findUser/',
+                            method:'POST',
+
+                            data:{
+                                username:username
+                            },
+
+                            headers:{
+                                'X-CSRFToken':'{{ csrf_token }}'
+                            },
+
+                        }).done(function(msg){     
+                            $('#Input_UserFound').val(msg['userFound']);
+                        }).fail(function(err){
+                            alert(err);
+                        });
+                    }else{
+                        alert("Username search is blank")
+                    }
+                });
+
+                $('#Btn_Save').on('click', function(event){
+                    event.preventDefault()
+                    
+                    if ($("#Input_UserFound").val() != ""){
+                        username = $('#Input_Username').val();
+                        newUsername = $('#Input_UserFound').val();
+
+                        $.ajax({
+                            url:'/admin/saveUser/',
+                            method:'POST',
+
+                            data:{
+                                username:username,
+                                newuser:newUsername,
+                            },
+
+                            headers:{
+                                'X-CSRFToken':'{{ csrf_token }}'
+                            },
+
+                        }).done(function(msg){  
+                            $('#Label_userfound').text(msg['userFound'])
+                        }).fail(function(err){
+                            alert(err);
+                        });
+                    }else{
+                        alert("Username search is blank")
+                    }
+                });
+
+                $('#Btn_Delete').on('click', function(event){
+                    event.preventDefault()
+                    
+                    if ($("#Input_UserFound").val() != ""){
+                        //preparation and value assignment to link create and link DataFolder
+                        username = $('#Input_UserFound').val();
+
+                        $.ajax({
+                            url:'/admin/deleteUser/',
+                            method:'POST',
+
+                            data:{
+                                username:username
+                            },
+
+                            headers:{
+                                'X-CSRFToken':'{{ csrf_token }}'
+                            },
+
+                        }).done(function(msg){  
+                            $('#Label_userfound').text(msg['userFound'])
+                        }).fail(function(err){
+                            alert(err);
+                        });
+                    }else{
+                        alert("Username search is blank")
+                    }
+                });
+                
+                $('#Btn_Logout').on('click', function(event){
+                    event.preventDefault()
+                    
+                    location.href ='/user/signout/'
+                });
+            });
+        </script>
+    </div>
+{% endblock %}
